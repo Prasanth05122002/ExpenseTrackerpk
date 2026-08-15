@@ -93,6 +93,7 @@
     width: 100%; background: var(--brass); color: #1A1400; border: none; padding: 12px;
     border-radius: 8px; font-weight: 700; font-size: 13.5px; cursor: pointer; margin-top: 6px;
   }
+  .auth-btn:hover { background: var(--brass-light); }
   .auth-error { color: var(--coral); font-size: 11.5px; margin-top: 10px; text-align: center; font-family: var(--font-mono); }
 
   /* Header & Navigation */
@@ -220,7 +221,7 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
-    min-width: 0; /* Crucial: stops child boxes from overflowing grid width */
+    min-width: 0;
     width: 100%;
   }
 
@@ -436,7 +437,7 @@
     <!-- 2. SIGNUP FORM -->
     <form id="signupForm" hidden>
       <h2>Create Account</h2>
-      <p>Register with your personal Google Sheet ID.</p>
+      <p>Register with your personal Google Sheet link or ID.</p>
       <div class="auth-field">
         <label>Username</label>
         <input type="text" id="signupUser" placeholder="Choose a username" required>
@@ -446,8 +447,8 @@
         <input type="password" id="signupPass" placeholder="Choose a password" required>
       </div>
       <div class="auth-field">
-        <label>Your Google Sheet ID</label>
-        <input type="text" id="signupSheetId" placeholder="Paste Google Sheet ID" required>
+        <label>Google Sheet Link or ID</label>
+        <input type="text" id="signupSheetId" placeholder="Paste Google Sheet Link or ID" required>
       </div>
       <button type="submit" class="auth-btn" id="signupSubmitBtn">Sign Up & Connect Sheet</button>
       <div class="auth-error" id="signupError" hidden></div>
@@ -639,6 +640,14 @@
     return Object.values(budgets.categories).reduce((sum, val) => sum + (parseFloat(val) || 0), 0);
   }
 
+  // Helper to extract clean Spreadsheet ID from link or raw ID
+  function extractSpreadsheetId(input) {
+    if (!input) return "";
+    const cleanInput = String(input).trim();
+    const match = cleanInput.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    return match ? match[1] : cleanInput;
+  }
+
   // ---------- User Authentication ----------
   async function handleLogin(username, password) {
     const errorDiv = $("loginError");
@@ -672,16 +681,24 @@
     }
   }
 
-  async function handleSignup(username, password, spreadsheetId) {
+  async function handleSignup(username, password, rawSheetInput) {
     const errorDiv = $("signupError");
     errorDiv.hidden = true;
     $("signupSubmitBtn").textContent = "Creating Account...";
+
+    const cleanSheetId = extractSpreadsheetId(rawSheetInput);
+    if (!cleanSheetId) {
+      errorDiv.textContent = "Please enter a valid Google Sheet link or ID.";
+      errorDiv.hidden = false;
+      $("signupSubmitBtn").textContent = "Sign Up & Connect Sheet";
+      return;
+    }
 
     try {
       const res = await fetch(DEFAULT_SCRIPT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ action: "signup", username, password, spreadsheetId }).toString()
+        body: new URLSearchParams({ action: "signup", username, password, spreadsheetId: cleanSheetId }).toString()
       });
       
       const result = await res.json();
@@ -1189,7 +1206,7 @@
       handleLogin($("loginUser").value, $("loginPass").value);
     });
 
-    // Signup Form Submit
+    // Signup Form Submit (Accepts Link or ID)
     $("signupForm").addEventListener("submit", (e) => {
       e.preventDefault();
       handleSignup($("signupUser").value, $("signupPass").value, $("signupSheetId").value);
