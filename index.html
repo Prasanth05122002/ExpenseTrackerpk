@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Ledger — Personal Finance Dashboard (₹)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -39,10 +39,10 @@
     --font-body: 'Inter', sans-serif;
     --font-mono: 'IBM Plex Mono', monospace;
   }
-  *{ box-sizing: border-box; }
+  *{ box-sizing: border-box; margin:0; padding:0; }
   [hidden] { display: none !important; }
-  html,body{ margin:0; padding:0; }
-  body{
+  
+  html, body{
     background: var(--bg);
     background-image:
       radial-gradient(circle at 100% 0%, rgba(201,162,39,0.06), transparent 45%),
@@ -51,201 +51,339 @@
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     min-height: 100vh;
+    overflow-x: hidden;
   }
-  .app{ max-width: 1240px; margin: 0 auto; padding: 28px 24px 80px; }
+
+  .app{
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 24px 20px 80px;
+  }
 
   /* Auth Modal */
   .auth-overlay{
-    position: fixed; inset:0; background: rgba(12,18,20,0.94); backdrop-filter: blur(8px);
+    position: fixed; inset:0; background: rgba(12,18,20,0.95); backdrop-filter: blur(8px);
     display: flex; align-items:center; justify-content:center; z-index: 9999;
+    padding: 16px;
   }
   .auth-card{
     background: var(--surface); border: 1px solid var(--border-strong); border-radius: 16px;
-    padding: 32px; width: 100%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    padding: 28px 24px; width: 100%; max-width: 400px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);
   }
   .auth-card h2{ font-family: var(--font-display); margin: 0 0 6px; font-size: 24px; color: var(--text); }
   .auth-card p{ font-size: 13px; color: var(--text-dim); margin: 0 0 18px; }
   .auth-toggle{ display:flex; margin-bottom: 20px; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--border-strong); overflow:hidden; }
-  .auth-toggle button{ flex:1; padding: 8px; border:none; background:none; color: var(--text-dim); font-family: var(--font-mono); font-size:12px; cursor:pointer; }
+  .auth-toggle button{ flex:1; padding: 10px; border:none; background:none; color: var(--text-dim); font-family: var(--font-mono); font-size:12px; cursor:pointer; }
   .auth-toggle button.active{ background: var(--brass); color: #1A1400; font-weight:700; }
 
   .auth-field{ margin-bottom: 14px; }
   .auth-field label{ display:block; font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); margin-bottom: 6px; text-transform: uppercase; }
   .auth-field input{
     width: 100%; background: var(--bg-2); border: 1px solid var(--border-strong); color: var(--text);
-    padding: 10px 12px; border-radius: 8px; font-size: 13.5px;
+    padding: 12px 14px; border-radius: 8px; font-size: 15px;
   }
   .auth-btn{
     width:100%; background: var(--brass); color:#1A1400; border:none; padding:12px;
-    border-radius:8px; font-weight:700; font-size:13.5px; cursor:pointer; margin-top: 6px;
+    border-radius:8px; font-weight:700; font-size:14px; cursor:pointer; margin-top: 8px;
   }
   .auth-btn:hover{ background: var(--brass-light); }
   .auth-error{ color: var(--coral); font-size: 12px; margin-top: 10px; text-align: center; font-family: var(--font-mono); }
 
+  /* Topbar */
   .topbar{
-    display:flex; align-items:flex-end; justify-content:space-between; gap:20px;
-    flex-wrap: wrap; margin-bottom: 26px; padding-bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 22px;
+    padding-bottom: 18px;
     border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
   }
   .brand .eyebrow{
     display:block; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em;
-    color: var(--brass); text-transform: uppercase; margin-bottom: 4px;
+    color: var(--brass); text-transform: uppercase; margin-bottom: 2px;
   }
   .brand h1{
-    font-family: var(--font-display); font-weight: 600; font-size: 34px; margin: 0;
-    letter-spacing: 0.01em;
+    font-family: var(--font-display); font-weight: 600; font-size: 30px; line-height: 1.1;
   }
   .brand h1 .dot{ color: var(--brass); }
 
-  .sync-controls{ display:flex; gap:8px; align-items:center; }
+  .topbar-actions{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+  }
+  .sync-controls{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
   .sync-badge{
     font-family: var(--font-mono); font-size: 11px; padding: 6px 12px; border-radius: 20px;
     background: var(--surface-2); border: 1px solid var(--border-strong); color: var(--text-dim);
-    display: flex; align-items: center; gap: 8px; cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
   }
   .sync-badge .dot-status{ width: 8px; height: 8px; border-radius: 50%; background: var(--text-faint); }
   .sync-badge.connected .dot-status{ background: var(--sage); }
-  
+
   .manual-sync-btn, .logout-btn{
     font-family: var(--font-mono); font-size: 11px; padding: 6px 12px; border-radius: 20px;
     background: var(--brass); color: #1A1400; border: none; font-weight: 600; cursor: pointer;
-    transition: opacity .15s;
   }
   .logout-btn{ background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border-strong); }
-  .logout-btn:hover{ color: var(--coral); border-color: var(--coral); }
 
-  .range-tabs{ display:flex; gap:4px; background: var(--surface); border:1px solid var(--border); border-radius: 10px; padding: 4px; }
-  .range-tabs button{
-    font-family: var(--font-mono); font-size: 12px; letter-spacing:0.03em; color: var(--text-dim);
-    background: transparent; border: none; padding: 8px 14px; border-radius: 7px; cursor: pointer;
-    transition: background .15s, color .15s;
+  /* Date Range Tabs */
+  .range-tabs{
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 3px;
+    max-width: 100%;
   }
-  .range-tabs button:hover{ color: var(--text); }
+  .range-tabs button{
+    font-family: var(--font-mono); font-size: 11.5px; color: var(--text-dim);
+    background: transparent; border: none; padding: 7px 12px; border-radius: 7px; cursor: pointer;
+    white-space: nowrap;
+  }
   .range-tabs button.active{ background: var(--brass); color: #1A1400; font-weight: 600; }
 
-  .custom-range{ display:flex; align-items:center; gap:8px; font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); }
+  .custom-range{
+    display: flex; align-items: center; gap: 8px; font-family: var(--font-mono);
+    font-size: 12px; color: var(--text-dim); margin-top: 4px;
+  }
   .custom-range input[type=date]{
     background: var(--surface); border:1px solid var(--border-strong); color: var(--text);
-    font-family: var(--font-mono); font-size: 12px; padding: 7px 8px; border-radius: 7px;
+    font-family: var(--font-mono); font-size: 12px; padding: 6px 8px; border-radius: 7px;
   }
   .custom-range button{
     background: var(--surface-2); border:1px solid var(--border-strong); color: var(--text);
-    padding: 7px 12px; border-radius: 7px; font-family: var(--font-mono); font-size: 12px; cursor: pointer;
+    padding: 6px 12px; border-radius: 7px; font-family: var(--font-mono); font-size: 12px; cursor: pointer;
   }
 
+  /* Hero Section */
   .hero{ position: relative; margin-bottom: 18px; }
-  .kpi-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .kpi-grid{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+  }
   .kpi-card{
-    background: var(--surface); border:1px solid var(--border); border-radius: 14px;
-    padding: 18px 18px 16px; position: relative; overflow:hidden;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 16px 14px; position: relative; overflow: hidden;
   }
   .kpi-card::before{
-    content:""; position:absolute; top:0; left:0; width:3px; height:100%; background: var(--card-accent, var(--brass));
-    opacity:0.7;
+    content: ""; position: absolute; top:0; left:0; width: 3px; height: 100%; background: var(--card-accent, var(--brass));
   }
   .kpi-card.income{ --card-accent: var(--income); }
   .kpi-card.spent{ --card-accent: var(--coral); }
   .kpi-card.remaining{ --card-accent: var(--teal); }
   .kpi-card.net{ --card-accent: var(--brass); }
-  .kpi-label{ display:block; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 8px; }
-  .kpi-value{ display:block; font-family: var(--font-mono); font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
-  .kpi-sub{ display:block; font-size: 11px; color: var(--text-faint); margin-top: 6px; font-family: var(--font-mono); }
+
+  .kpi-label{ display:block; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 6px; }
+  .kpi-value{ display:block; font-family: var(--font-mono); font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .kpi-sub{ display:block; font-size: 11px; color: var(--text-faint); margin-top: 4px; font-family: var(--font-mono); }
   .kpi-value.negative{ color: var(--coral); }
   .kpi-value.positive{ color: var(--sage); }
 
   .stamp{
-    position: absolute; top: -14px; right: 6px; width: 108px; height: 108px; border-radius: 50%;
-    border: 2.5px dashed var(--stamp-color, var(--sage)); display:flex; align-items:center; justify-content:center;
-    text-align:center; transform: rotate(-9deg); background: rgba(16,23,26,0.65); backdrop-filter: blur(2px);
+    position: absolute; top: -10px; right: 8px; width: 84px; height: 84px; border-radius: 50%;
+    border: 2px dashed var(--stamp-color, var(--sage)); display:flex; align-items:center; justify-content:center;
+    text-align:center; transform: rotate(-9deg); background: rgba(16,23,26,0.7); backdrop-filter: blur(2px);
   }
-  .stamp span{ font-family: var(--font-mono); font-weight: 700; font-size: 12px; letter-spacing: 0.06em; color: var(--stamp-color, var(--sage)); line-height: 1.25; padding: 0 8px; }
+  .stamp span{ font-family: var(--font-mono); font-weight: 700; font-size: 10.5px; color: var(--stamp-color, var(--sage)); line-height: 1.15; }
 
+  /* Pace Banner */
   .pace-banner{
-    margin: 18px 0; padding: 13px 16px; border-radius: 10px; font-size: 13.5px;
+    margin: 14px 0 18px; padding: 12px 14px; border-radius: 10px; font-size: 13px;
     border: 1px solid var(--border-strong); background: var(--surface);
-    display:flex; align-items:center; gap: 10px;
+    display: flex; align-items: center; gap: 10px; line-height: 1.4;
   }
+  .pace-banner strong{ font-family: var(--font-mono); }
 
-  .grid-main{ display:grid; grid-template-columns: 1.5fr 1fr; gap: 18px; align-items:start; margin-top: 8px; }
-  .col-left, .col-right{ display:flex; flex-direction:column; gap: 18px; }
+  /* Main Grid */
+  .grid-main{
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 18px;
+    align-items: start;
+  }
+  .col-left, .col-right{ display: flex; flex-direction: column; gap: 18px; }
 
-  .panel{ background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 18px 20px; }
-  .panel-head{ display:flex; align-items:center; justify-content:space-between; gap: 10px; margin-bottom: 14px; flex-wrap:wrap; }
-  .panel-head h2{ font-family: var(--font-display); font-weight: 600; font-size: 18px; margin:0; }
+  .panel{ background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 16px; }
+  .panel-head{ display:flex; align-items:center; justify-content:space-between; gap: 8px; margin-bottom: 14px; flex-wrap:wrap; }
+  .panel-head h2{ font-family: var(--font-display); font-weight: 600; font-size: 17px; margin:0; }
   .panel-sub{ font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); }
 
+  /* Category Budgets */
   .cat-list{ display:flex; flex-direction:column; gap: 12px; }
-  .cat-row-top{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 5px; }
-  .cat-name{ font-size: 13.5px; font-weight: 500; display:flex; align-items:center; gap:7px; }
+  .cat-row-top{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 5px; font-size: 13px; }
+  .cat-name{ display:flex; align-items:center; gap:7px; font-weight:500; }
   .cat-dot{ width:8px; height:8px; border-radius:50%; display:inline-block; }
   .cat-amounts{ font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); }
-  .bar-track{ height: 8px; background: var(--surface-2); border-radius: 6px; overflow:hidden; border: 1px solid var(--border); }
-  .bar-fill{ height: 100%; border-radius: 6px; transition: width .3s ease; }
+  .bar-track{ height: 7px; background: var(--surface-2); border-radius: 6px; overflow:hidden; border: 1px solid var(--border); }
+  .bar-fill{ height: 100%; border-radius: 6px; }
+  .over-tag{ font-family: var(--font-mono); font-size: 9.5px; color: var(--coral); margin-left: 4px; }
 
-  .filter-chips{ display:flex; flex-wrap: wrap; gap: 6px; }
-  .chip{ font-family: var(--font-mono); font-size: 11px; padding: 5px 10px; border-radius: 20px; border: 1px solid var(--border-strong); color: var(--text-dim); cursor:pointer; background: transparent; }
+  /* Filter Chips */
+  .filter-chips-container{
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .filter-chips{ display: flex; gap: 6px; width: max-content; }
+  .chip{
+    font-family: var(--font-mono); font-size: 11px; padding: 5px 12px; border-radius: 20px;
+    border: 1px solid var(--border-strong); color: var(--text-dim); cursor:pointer; background: transparent;
+    white-space: nowrap;
+  }
   .chip.active{ background: var(--brass); color:#1A1400; border-color: var(--brass); font-weight:600; }
 
+  /* Add Form */
   .add-form{
-    display:grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto auto; gap: 8px; margin-bottom: 16px;
-    padding: 12px; background: var(--surface-2); border-radius: 10px; border: 1px dashed var(--border-strong);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr) 1.2fr auto;
+    gap: 8px;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: var(--surface-2);
+    border-radius: 10px;
+    border: 1px dashed var(--border-strong);
   }
-  .add-form input, .add-form select{ background: var(--bg-2); border: 1px solid var(--border-strong); color: var(--text); border-radius: 7px; padding: 8px 9px; font-size: 12.5px; width: 100%; }
-  .add-form button{ background: var(--brass); color: #1A1400; border:none; border-radius: 7px; padding: 8px 14px; font-weight: 700; cursor:pointer; }
-  .add-form .type-toggle{ display:flex; border:1px solid var(--border-strong); border-radius:7px; overflow:hidden; }
-  .add-form .type-toggle button{ flex:1; background: var(--bg-2); color: var(--text-dim); border:none; padding: 8px 6px; font-size:11.5px; cursor:pointer; }
+  .add-form input, .add-form select{
+    background: var(--bg-2); border: 1px solid var(--border-strong); color: var(--text);
+    border-radius: 7px; padding: 10px 8px; font-size: 13px; width: 100%;
+    font-family: var(--font-body);
+  }
+  .add-form input[type=number]{ font-family: var(--font-mono); }
+  .add-form button[type=submit]{
+    background: var(--brass); color: #1A1400; border:none; border-radius: 7px; padding: 10px 16px;
+    font-weight: 700; font-size: 13px; cursor:pointer;
+  }
+  .add-form .type-toggle{
+    display: flex; border: 1px solid var(--border-strong); border-radius: 7px; overflow: hidden;
+  }
+  .add-form .type-toggle button{
+    flex: 1; background: var(--bg-2); color: var(--text-dim); border: none; padding: 8px 4px;
+    font-size: 11px; font-family: var(--font-mono); cursor: pointer;
+  }
   .add-form .type-toggle button.active.expense{ background: var(--coral); color:#1a0806; }
   .add-form .type-toggle button.active.income{ background: var(--sage); color:#08150f; }
 
-  .table-wrap{ max-height: 420px; overflow-y: auto; }
-  .ledger-table{ width:100%; border-collapse: collapse; font-size: 13px; }
-  .ledger-table thead th{ text-align:left; font-family: var(--font-mono); font-size: 10.5px; color: var(--text-faint); padding: 6px 8px; position: sticky; top:0; background: var(--surface); border-bottom: 1px solid var(--border-strong); }
+  /* Transactions View (Table for Desktop, Cards for Mobile) */
+  .table-wrap{ max-height: 480px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .ledger-table{ width: 100%; border-collapse: collapse; font-size: 13px; }
+  .ledger-table thead th{
+    text-align: left; font-family: var(--font-mono); font-size: 10.5px; color: var(--text-faint);
+    padding: 8px 6px; position: sticky; top: 0; background: var(--surface); border-bottom: 1px solid var(--border-strong);
+  }
   .ledger-table tbody tr{ border-bottom: 1px dotted var(--border-strong); }
-  .ledger-table td{ padding: 9px 8px; vertical-align: middle; }
-  .ledger-table td.amount{ font-family: var(--font-mono); font-weight:600; text-align:right; }
+  .ledger-table td{ padding: 10px 6px; vertical-align: middle; }
+  .ledger-table td.amount{ font-family: var(--font-mono); font-weight: 600; text-align: right; }
+  
+  .cat-pill, .pay-pill{
+    display: inline-block; font-size: 10.5px; padding: 2px 7px; border-radius: 12px;
+    background: var(--surface-2); border: 1px solid var(--border-strong); font-family: var(--font-mono);
+  }
+  .pay-pill{ color: var(--brass-light); border-color: rgba(201,162,39,0.3); }
+  .del-btn{ background: none; border: none; color: var(--text-faint); cursor: pointer; font-size: 15px; padding: 4px 8px; }
+  .del-btn:hover{ color: var(--coral); }
+  
   .amount.expense{ color: var(--coral); }
   .amount.income{ color: var(--sage); }
-  .cat-pill, .pay-pill{ display:inline-block; font-size: 10.5px; padding: 2px 7px; border-radius: 20px; font-weight:500; background: var(--surface-2); border: 1px solid var(--border-strong); font-family: var(--font-mono); }
-  .pay-pill{ color: var(--brass-light); border-color: rgba(201,162,39,0.3); }
-  .del-btn{ background:none; border:none; color: var(--text-faint); cursor:pointer; font-size: 14px; }
-  .del-btn:hover{ color: var(--coral); }
 
-  .chart-box{ position:relative; height: 220px; }
-  .budget-setup .panel-head button{ background: var(--surface-2); border:1px solid var(--border-strong); color: var(--text); padding:6px 12px; border-radius:7px; font-family: var(--font-mono); font-size:11.5px; cursor:pointer; }
+  /* Mobile Card View (shown below 720px) */
+  .mobile-ledger-cards{ display: none; flex-direction: column; gap: 8px; }
+  .tx-card{
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .tx-card-header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .tx-card-pills{ display: flex; align-items: center; gap: 6px; }
+  .tx-card-body{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2px;
+  }
+  .tx-card-note{ font-size: 12px; color: var(--text-dim); word-break: break-word; }
+
+  /* Charts & Settings */
+  .chart-box{ position: relative; height: 210px; }
+  .budget-setup .panel-head button{
+    background: var(--surface-2); border:1px solid var(--border-strong); color: var(--text);
+    padding: 6px 12px; border-radius: 7px; font-family: var(--font-mono); font-size: 11.5px; cursor: pointer;
+  }
   #budgetSetupBody{ display:flex; flex-direction:column; gap:10px; }
-  .field-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
-  .field-row input{ width: 110px; background: var(--bg-2); border:1px solid var(--border-strong); color: var(--text); font-family: var(--font-mono); padding: 6px 8px; border-radius:7px; text-align:right; }
-  .save-budget-btn{ margin-top: 6px; background: var(--brass); color:#1A1400; border:none; border-radius:8px; padding:9px; font-weight:700; cursor:pointer; }
+  .field-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; font-size: 13px; }
+  .field-row input{
+    width: 120px; background: var(--bg-2); border:1px solid var(--border-strong); color: var(--text);
+    font-family: var(--font-mono); padding: 8px; border-radius:7px; text-align:right; font-size: 13px;
+  }
+  .save-budget-btn{
+    margin-top: 6px; background: var(--brass); color:#1A1400; border:none; border-radius:8px;
+    padding: 12px; font-weight:700; cursor:pointer; font-size: 13px;
+  }
 
-  .data-panel .hint{ font-size: 12px; color: var(--text-faint); line-height:1.5; margin: 0 0 12px; }
-  .data-panel-btns{ display:flex; gap:8px; flex-wrap:wrap; }
-  .ghost-btn{ flex:1; min-width: 120px; background: var(--surface-2); border:1px solid var(--border-strong); color: var(--text-dim); padding: 9px; border-radius: 8px; font-family: var(--font-mono); font-size: 11.5px; cursor:pointer; }
-  .ghost-btn:hover{ border-color: var(--brass); color: var(--text); }
-  .ghost-btn.danger:hover{ border-color: var(--coral); color: var(--coral); }
+  .data-panel .hint{ font-size: 12px; color: var(--text-faint); line-height: 1.5; margin-bottom: 12px; }
+  .data-panel-btns{ display:flex; gap:8px; }
+  .ghost-btn{
+    flex:1; background: var(--surface-2); border: 1px solid var(--border-strong); color: var(--text-dim);
+    padding: 10px; border-radius: 8px; font-family: var(--font-mono); font-size: 11.5px; cursor:pointer;
+  }
+  .ghost-btn.danger{ color: var(--coral); }
 
-  @media (max-width: 980px){
-    .kpi-grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* ---------------------------------------------------- */
+  /* RESPONSIVE BREAKPOINTS (TABLETS & PHONES)            */
+  /* ---------------------------------------------------- */
+  @media (max-width: 900px){
     .grid-main{ grid-template-columns: 1fr; }
-    .topbar{ align-items: flex-start; }
-    .sync-controls{ flex-wrap: wrap; justify-content: flex-end; }
+    .kpi-grid{ grid-template-columns: repeat(2, 1fr); }
+    .add-form{ grid-template-columns: 1fr 1fr; }
+    .add-form button[type=submit]{ grid-column: 1 / -1; }
   }
 
   @media (max-width: 680px){
-    .app{ padding: 20px 14px 60px; }
-    .brand h1{ font-size: 28px; }
-    .topbar{ flex-direction: column; align-items: flex-start; }
-    .sync-controls{ width: 100%; justify-content: space-between; }
-    .range-tabs{ width: 100%; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .range-tabs button{ width: 100%; }
-    .custom-range{ flex-wrap: wrap; }
-    .kpi-grid{ grid-template-columns: 1fr; }
-    .kpi-value{ font-size: 22px; }
-    .add-form{ grid-template-columns: 1fr 1fr; }
-    .add-form .type-toggle{ grid-column: 1 / -1; }
-    .add-form button{ grid-column: 1 / -1; }
-    .table-wrap{ overflow-x: auto; }
-    .ledger-table{ min-width: 650px; }
-    .auth-card{ padding: 22px 18px; }
+    .app{ padding: 16px 12px 60px; }
+    .topbar{ flex-direction: column; align-items: flex-start; gap: 14px; }
+    .topbar-actions{ width: 100%; align-items: stretch; }
+    .sync-controls{ justify-content: space-between; width: 100%; }
+    .range-tabs{ width: 100%; justify-content: space-between; overflow-x: auto; }
+    .range-tabs button{ flex: 1; text-align: center; padding: 8px 4px; font-size: 10.5px; }
+
+    .kpi-grid{ grid-template-columns: 1fr 1fr; gap: 8px; }
+    .kpi-card{ padding: 12px 10px; }
+    .kpi-value{ font-size: 18px; }
+    .stamp{ width: 68px; height: 68px; top: -6px; right: 4px; }
+    .stamp span{ font-size: 8.5px; }
+
+    /* Switch from Table to Mobile Cards */
+    .ledger-table{ display: none; }
+    .mobile-ledger-cards{ display: flex; }
+
+    .add-form{
+      grid-template-columns: 1fr;
+      padding: 14px;
+      gap: 10px;
+    }
+    .add-form input, .add-form select, .add-form button{
+      font-size: 15px; /* Prevent iOS zoom */
+      padding: 10px 12px;
+    }
   }
 </style>
 </head>
@@ -262,7 +400,7 @@
     <!-- 1. LOGIN FORM -->
     <form id="loginForm">
       <h2>Welcome Back</h2>
-      <p>Enter your credentials to access your dashboard.</p>
+      <p>Enter your credentials to access your ledger.</p>
       <div class="auth-field">
         <label>Username</label>
         <input type="text" id="loginUser" placeholder="Enter username" required autocomplete="username">
@@ -303,20 +441,21 @@
       <span class="eyebrow">Personal Finance</span>
       <h1>Ledger<span class="dot">.</span></h1>
     </div>
-    <div style="display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
-      <div style="display:flex; gap:10px; align-items:center;">
-        <div class="sync-controls">
-          <div class="sync-badge" id="syncBadge"><span class="dot-status"></span><span id="syncText">Connected</span></div>
-          <button class="manual-sync-btn" id="manualSyncBtn">🔄 Sync Now</button>
-          <button class="logout-btn" id="logoutBtn">Logout</button>
-        </div>
-        <div class="range-tabs" id="rangeTabs">
-          <button data-range="thisMonth" class="active">This Month</button>
-          <button data-range="lastMonth">Last Month</button>
-          <button data-range="ytd">Year to Date</button>
-          <button data-range="custom">Custom</button>
-        </div>
+    
+    <div class="topbar-actions">
+      <div class="sync-controls">
+        <div class="sync-badge" id="syncBadge"><span class="dot-status"></span><span id="syncText">Connected</span></div>
+        <button class="manual-sync-btn" id="manualSyncBtn">🔄 Sync</button>
+        <button class="logout-btn" id="logoutBtn">Logout</button>
       </div>
+      
+      <div class="range-tabs" id="rangeTabs">
+        <button data-range="thisMonth" class="active">This Month</button>
+        <button data-range="lastMonth">Last Month</button>
+        <button data-range="ytd">Year to Date</button>
+        <button data-range="custom">Custom</button>
+      </div>
+
       <div class="custom-range" id="customRange" hidden>
         <input type="date" id="customStart"> <span>to</span> <input type="date" id="customEnd">
         <button id="applyCustom">Apply</button>
@@ -344,7 +483,7 @@
       <div class="kpi-card net">
         <span class="kpi-label">Net Cash Flow</span>
         <span class="kpi-value" id="kpiNet">₹0</span>
-        <span class="kpi-sub">Income − spent, this period</span>
+        <span class="kpi-sub">Income − spent</span>
       </div>
     </div>
     <div class="stamp" id="statusStamp"><span id="stampText">ON<br>TRACK</span></div>
@@ -365,7 +504,9 @@
       <section class="panel">
         <div class="panel-head">
           <h2>Ledger</h2>
-          <div class="filter-chips" id="filterChips"></div>
+          <div class="filter-chips-container">
+            <div class="filter-chips" id="filterChips"></div>
+          </div>
         </div>
 
         <form id="addForm" class="add-form">
@@ -382,16 +523,20 @@
           </select>
           <input type="number" id="txAmount" placeholder="Amount (₹)" step="1" min="0" required>
           <input type="text" id="txNote" placeholder="Note (optional)">
-          <button type="submit">Add</button>
+          <button type="submit">Add Entry</button>
         </form>
 
         <div class="table-wrap">
+          <!-- Desktop Table -->
           <table class="ledger-table">
             <thead>
               <tr><th>Date</th><th>Category</th><th>Method</th><th>Note</th><th style="text-align:right;">Amount</th><th></th></tr>
             </thead>
             <tbody id="txBody"></tbody>
           </table>
+
+          <!-- Mobile Cards -->
+          <div class="mobile-ledger-cards" id="mobileTxCards"></div>
         </div>
       </section>
     </div>
@@ -417,10 +562,10 @@
 
       <section class="panel data-panel">
         <div class="panel-head"><h2>Google Sheets Sync</h2></div>
-        <p class="hint" id="sheetHint">Connected directly to user spreadsheet.</p>
+        <p class="hint" id="sheetHint">Connected directly to personal user spreadsheet.</p>
         <div class="data-panel-btns">
-          <button class="ghost-btn" id="exportCsvBtn">📥 Download CSV</button>
-          <button class="ghost-btn danger" id="clearAll">Clear Data</button>
+          <button class="ghost-btn" id="exportCsvBtn">📥 CSV</button>
+          <button class="ghost-btn danger" id="clearAll">Clear</button>
         </div>
       </section>
     </div>
@@ -746,7 +891,7 @@
     $("kpiNet").className = "kpi-value" + (net < 0 ? " negative" : " positive");
     $("kpiIncomeSub").textContent = filtered.filter(t=>t.type==="income").length + " transactions";
     $("kpiSpentSub").textContent = budgets.overall>0 ? pct.toFixed(0)+"% of monthly budget" : "no budget set";
-    $("kpiRemainingSub").textContent = "of " + fmt(budgets.overall) + " monthly budget";
+    $("kpiRemainingSub").textContent = "of " + fmt(budgets.overall) + " cap";
 
     const stamp = $("statusStamp"), stampText = $("stampText");
     stamp.classList.remove("warning","overspent");
@@ -757,7 +902,7 @@
     renderPaceBanner(totalSpent);
     renderCategoryBudgets(filtered);
     renderFilterChips();
-    renderTable(catFiltered);
+    renderTransactions(catFiltered);
     renderCharts(filtered);
   }
 
@@ -775,14 +920,12 @@
     banner.classList.remove("ok","warn","bad");
     if(diff > 0.5){
       banner.classList.add(diff > budgets.overall*0.1 ? "bad" : "warn");
-      banner.innerHTML = `<span class="icon">${diff > budgets.overall*0.1 ? "🔴" : "🟡"}</span>
-        At your current pace of <strong>${fmt(dailyAvg)}/day</strong>, you're on track to spend <strong>${fmt(projected)}</strong>
-        by month end — <strong>${fmt(diff)} over</strong> your ${fmt(budgets.overall)} budget.`;
+      banner.innerHTML = `<span>${diff > budgets.overall*0.1 ? "🔴" : "🟡"}</span>
+        At <strong>${fmt(dailyAvg)}/day</strong>, you're projected to spend <strong>${fmt(projected)}</strong> (<strong>${fmt(diff)} over</strong> budget).`;
     } else {
       banner.classList.add("ok");
-      banner.innerHTML = `<span class="icon">🟢</span>
-        At your current pace of <strong>${fmt(dailyAvg)}/day</strong>, you're projected to land at <strong>${fmt(projected)}</strong>
-        this month — <strong>${fmt(Math.abs(diff))} under</strong> your ${fmt(budgets.overall)} budget.`;
+      banner.innerHTML = `<span>🟢</span>
+        At <strong>${fmt(dailyAvg)}/day</strong>, you're projected to finish at <strong>${fmt(projected)}</strong> (<strong>${fmt(Math.abs(diff))} under</strong> budget).`;
     }
   }
 
@@ -803,9 +946,9 @@
       row.innerHTML = `
         <div class="cat-row-top">
           <span class="cat-name"><span class="cat-dot" style="background:${CAT_COLORS[cat]}"></span>${cat}</span>
-          <span class="cat-amounts">${fmt(spent)} <span style="color:var(--text-faint)">/ ${fmt(cap)}</span>${over ? '<span class="over-tag">OVER BUDGET</span>' : ""}</span>
+          <span class="cat-amounts">${fmt(spent)} <span style="color:var(--text-faint)">/ ${fmt(cap)}</span>${over ? '<span class="over-tag">OVER</span>' : ""}</span>
         </div>
-        <div class="bar-track"><div class="bar-fill ${over?'over':''}" style="width:${pct}%; background:${CAT_COLORS[cat]}"></div></div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%; background:${over?'var(--coral)':CAT_COLORS[cat]}"></div></div>
       `;
       list.appendChild(row);
     });
@@ -827,30 +970,61 @@
     });
   }
 
-  function renderTable(list){
+  function renderTransactions(list){
     const body = $("txBody");
+    const mobileCards = $("mobileTxCards");
     body.innerHTML = "";
+    mobileCards.innerHTML = "";
+    
     const sorted = [...list].sort((a,b) => b.date.localeCompare(a.date));
     if(sorted.length === 0){
-      body.innerHTML = `<tr class="empty-row"><td colspan="6">No transactions in this view yet.</td></tr>`;
+      body.innerHTML = `<tr class="empty-row"><td colspan="6" style="text-align:center; padding: 24px; color: var(--text-faint);">No transactions in this view.</td></tr>`;
+      mobileCards.innerHTML = `<div style="text-align:center; padding: 24px; color: var(--text-faint); font-size: 13px;">No transactions in this view.</div>`;
       return;
     }
+
     sorted.forEach(t => {
-      const tr = document.createElement("tr");
       const isIncome = t.type === "income";
       const catColor = isIncome ? "var(--income)" : CAT_COLORS[t.category] || "var(--text-dim)";
+      
+      // Desktop Table Row
+      const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td class="date">${t.date}</td>
+        <td class="date" style="font-family: var(--font-mono); font-size: 12px; color: var(--text-dim);">${t.date}</td>
         <td><span class="cat-pill" style="border-color:${catColor}55; color:${catColor}">${t.category}</span></td>
         <td><span class="pay-pill">${t.method || "UPI"}</span></td>
-        <td style="color:var(--text-dim)">${t.note ? t.note : "—"}</td>
+        <td style="color:var(--text-dim); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${t.note ? t.note : "—"}</td>
         <td class="amount ${isIncome?'income':'expense'}">${isIncome?"+":"-"}${fmt(t.amount)}</td>
         <td><button class="del-btn" data-id="${t.id}" title="Delete">✕</button></td>
       `;
       body.appendChild(tr);
+
+      // Mobile Card
+      const card = document.createElement("div");
+      card.className = "tx-card";
+      card.innerHTML = `
+        <div class="tx-card-header">
+          <div class="tx-card-pills">
+            <span class="cat-pill" style="border-color:${catColor}55; color:${catColor}">${t.category}</span>
+            <span class="pay-pill">${t.method || "UPI"}</span>
+          </div>
+          <span class="amount ${isIncome?'income':'expense'}" style="font-family: var(--font-mono); font-weight: 600; font-size: 14px;">
+            ${isIncome?"+":"-"}${fmt(t.amount)}
+          </span>
+        </div>
+        <div class="tx-card-body">
+          <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-faint);">${t.date}</span>
+          <div style="display:flex; align-items:center; gap: 8px;">
+            <span class="tx-card-note">${t.note || ""}</span>
+            <button class="del-btn" data-id="${t.id}" title="Delete">✕</button>
+          </div>
+        </div>
+      `;
+      mobileCards.appendChild(card);
     });
     
-    body.querySelectorAll(".del-btn").forEach(btn => {
+    // Attach event listeners for delete actions
+    document.querySelectorAll(".del-btn").forEach(btn => {
       btn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -892,7 +1066,7 @@
         options: {
           responsive: true, maintainAspectRatio: false, cutout: "62%",
           plugins: {
-            legend: { position: "right", labels: { color: "#9AACA7", font: { family: "IBM Plex Mono", size: 11 }, boxWidth: 10, padding: 10 } },
+            legend: { position: "right", labels: { color: "#9AACA7", font: { family: "IBM Plex Mono", size: 10 }, boxWidth: 10, padding: 8 } },
             tooltip: { enabled: catLabels.length>0, callbacks: { label: (ctx) => ` ${ctx.label}: ₹${ctx.parsed.toFixed(2)}` } }
           }
         }
@@ -912,13 +1086,13 @@
       if(dailyChart) dailyChart.destroy();
       dailyChart = new Chart(barCtx, {
         type: "bar",
-        data: { labels: dayLabels, datasets: [{ data: days.map(d=>spendByDay[d]), backgroundColor: "#C9A227", borderRadius: 3, maxBarThickness: 18 }]},
+        data: { labels: dayLabels, datasets: [{ data: days.map(d=>spendByDay[d]), backgroundColor: "#C9A227", borderRadius: 3, maxBarThickness: 14 }]},
         options: {
           responsive: true, maintainAspectRatio: false,
           plugins: { legend: { display:false }, tooltip: { callbacks: { label: (ctx) => ` ₹${ctx.parsed.y.toFixed(2)}` } } },
           scales: {
-            x: { ticks: { color:"#66787D", font:{family:"IBM Plex Mono", size:10}, autoSkip:true, maxTicksLimit: 12 }, grid: { display:false } },
-            y: { ticks: { color:"#66787D", font:{family:"IBM Plex Mono", size:10}, callback: (v)=>"₹"+v }, grid: { color: "rgba(237,232,222,0.06)" } }
+            x: { ticks: { color:"#66787D", font:{family:"IBM Plex Mono", size:9}, autoSkip:true, maxTicksLimit: 8 }, grid: { display:false } },
+            y: { ticks: { color:"#66787D", font:{family:"IBM Plex Mono", size:9}, callback: (v)=>"₹"+v }, grid: { color: "rgba(237,232,222,0.06)" } }
           }
         }
       });
@@ -931,20 +1105,18 @@
     const body = $("budgetSetupBody");
     let totalCap = calculateTotalBudget();
     
-    let html = `<div class="field-row overall"><label>Total calculated budget (₹)</label><input type="number" id="editOverall" value="${totalCap}" disabled style="opacity: 0.7;"></div>`;
+    let html = `<div class="field-row overall" style="padding-bottom:8px; border-bottom:1px solid var(--border);"><label>Total Budget (₹)</label><input type="number" id="editOverall" value="${totalCap}" disabled style="opacity: 0.7;"></div>`;
     
     EXPENSE_CATEGORIES.forEach(cat => {
       html += `<div class="field-row"><label>${cat} (₹)</label><input type="number" class="editCat" data-cat="${cat}" value="${budgets.categories[cat]||0}" step="500"></div>`;
     });
-    html += `<button class="save-budget-btn" id="saveBudgets">Save budget</button>`;
+    html += `<button class="save-budget-btn" id="saveBudgets">Save Budget</button>`;
     body.innerHTML = html;
 
     body.querySelectorAll(".editCat").forEach(inp => {
       inp.addEventListener("input", () => {
         let sum = 0;
-        body.querySelectorAll(".editCat").forEach(i => {
-          sum += parseFloat(i.value) || 0;
-        });
+        body.querySelectorAll(".editCat").forEach(i => { sum += parseFloat(i.value) || 0; });
         $("editOverall").value = sum;
       });
     });
