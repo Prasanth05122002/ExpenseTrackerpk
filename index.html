@@ -40,6 +40,7 @@
     --font-mono: 'IBM Plex Mono', monospace;
   }
   *{ box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html,body{ margin:0; padding:0; }
   body{
     background: var(--bg);
@@ -53,7 +54,33 @@
   }
   .app{ max-width: 1240px; margin: 0 auto; padding: 28px 24px 80px; }
 
-  ::selection{ background: var(--brass); color: #10171A; }
+  /* Auth Modal */
+  .auth-overlay{
+    position: fixed; inset:0; background: rgba(12,18,20,0.94); backdrop-filter: blur(8px);
+    display: flex; align-items:center; justify-content:center; z-index: 9999;
+  }
+  .auth-card{
+    background: var(--surface); border: 1px solid var(--border-strong); border-radius: 16px;
+    padding: 32px; width: 100%; max-width: 420px; box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  }
+  .auth-card h2{ font-family: var(--font-display); margin: 0 0 6px; font-size: 24px; color: var(--text); }
+  .auth-card p{ font-size: 13px; color: var(--text-dim); margin: 0 0 18px; }
+  .auth-toggle{ display:flex; margin-bottom: 20px; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--border-strong); overflow:hidden; }
+  .auth-toggle button{ flex:1; padding: 8px; border:none; background:none; color: var(--text-dim); font-family: var(--font-mono); font-size:12px; cursor:pointer; }
+  .auth-toggle button.active{ background: var(--brass); color: #1A1400; font-weight:700; }
+
+  .auth-field{ margin-bottom: 14px; }
+  .auth-field label{ display:block; font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); margin-bottom: 6px; text-transform: uppercase; }
+  .auth-field input{
+    width: 100%; background: var(--bg-2); border: 1px solid var(--border-strong); color: var(--text);
+    padding: 10px 12px; border-radius: 8px; font-size: 13.5px;
+  }
+  .auth-btn{
+    width:100%; background: var(--brass); color:#1A1400; border:none; padding:12px;
+    border-radius:8px; font-weight:700; font-size:13.5px; cursor:pointer; margin-top: 6px;
+  }
+  .auth-btn:hover{ background: var(--brass-light); }
+  .auth-error{ color: var(--coral); font-size: 12px; margin-top: 10px; text-align: center; font-family: var(--font-mono); }
 
   .topbar{
     display:flex; align-items:flex-end; justify-content:space-between; gap:20px;
@@ -79,12 +106,13 @@
   .sync-badge .dot-status{ width: 8px; height: 8px; border-radius: 50%; background: var(--text-faint); }
   .sync-badge.connected .dot-status{ background: var(--sage); }
   
-  .manual-sync-btn{
+  .manual-sync-btn, .logout-btn{
     font-family: var(--font-mono); font-size: 11px; padding: 6px 12px; border-radius: 20px;
     background: var(--brass); color: #1A1400; border: none; font-weight: 600; cursor: pointer;
     transition: opacity .15s;
   }
-  .manual-sync-btn:hover{ opacity: 0.9; }
+  .logout-btn{ background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border-strong); }
+  .logout-btn:hover{ color: var(--coral); border-color: var(--coral); }
 
   .range-tabs{ display:flex; gap:4px; background: var(--surface); border:1px solid var(--border); border-radius: 10px; padding: 4px; }
   .range-tabs button{
@@ -104,7 +132,6 @@
     background: var(--surface-2); border:1px solid var(--border-strong); color: var(--text);
     padding: 7px 12px; border-radius: 7px; font-family: var(--font-mono); font-size: 12px; cursor: pointer;
   }
-  .custom-range button:hover{ border-color: var(--brass); }
 
   .hero{ position: relative; margin-bottom: 18px; }
   .kpi-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
@@ -120,14 +147,8 @@
   .kpi-card.spent{ --card-accent: var(--coral); }
   .kpi-card.remaining{ --card-accent: var(--teal); }
   .kpi-card.net{ --card-accent: var(--brass); }
-  .kpi-label{
-    display:block; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.12em;
-    text-transform: uppercase; color: var(--text-faint); margin-bottom: 8px;
-  }
-  .kpi-value{
-    display:block; font-family: var(--font-mono); font-size: 26px; font-weight: 600;
-    font-variant-numeric: tabular-nums; letter-spacing: -0.01em;
-  }
+  .kpi-label{ display:block; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-faint); margin-bottom: 8px; }
+  .kpi-value{ display:block; font-family: var(--font-mono); font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
   .kpi-sub{ display:block; font-size: 11px; color: var(--text-faint); margin-top: 6px; font-family: var(--font-mono); }
   .kpi-value.negative{ color: var(--coral); }
   .kpi-value.positive{ color: var(--sage); }
@@ -136,28 +157,14 @@
     position: absolute; top: -14px; right: 6px; width: 108px; height: 108px; border-radius: 50%;
     border: 2.5px dashed var(--stamp-color, var(--sage)); display:flex; align-items:center; justify-content:center;
     text-align:center; transform: rotate(-9deg); background: rgba(16,23,26,0.65); backdrop-filter: blur(2px);
-    box-shadow: 0 0 0 1px var(--stamp-color, var(--sage)) inset;
   }
-  .stamp::after{
-    content:""; position:absolute; inset:8px; border: 1px solid var(--stamp-color, var(--sage)); border-radius: 50%; opacity:0.6;
-  }
-  .stamp span{
-    font-family: var(--font-mono); font-weight: 700; font-size: 12px; letter-spacing: 0.06em;
-    color: var(--stamp-color, var(--sage)); line-height: 1.25; padding: 0 8px;
-  }
-  .stamp.warning{ --stamp-color: var(--amber); }
-  .stamp.overspent{ --stamp-color: var(--coral); }
+  .stamp span{ font-family: var(--font-mono); font-weight: 700; font-size: 12px; letter-spacing: 0.06em; color: var(--stamp-color, var(--sage)); line-height: 1.25; padding: 0 8px; }
 
   .pace-banner{
     margin: 18px 0; padding: 13px 16px; border-radius: 10px; font-size: 13.5px;
     border: 1px solid var(--border-strong); background: var(--surface);
     display:flex; align-items:center; gap: 10px;
   }
-  .pace-banner .icon{ font-size: 16px; }
-  .pace-banner strong{ font-family: var(--font-mono); }
-  .pace-banner.ok{ border-color: rgba(111,169,138,0.4); color: var(--sage); }
-  .pace-banner.warn{ border-color: rgba(232,163,61,0.45); color: var(--amber); }
-  .pace-banner.bad{ border-color: rgba(226,87,76,0.45); color: var(--coral); }
 
   .grid-main{ display:grid; grid-template-columns: 1.5fr 1fr; gap: 18px; align-items:start; margin-top: 8px; }
   .col-left, .col-right{ display:flex; flex-direction:column; gap: 18px; }
@@ -171,100 +178,101 @@
   .cat-row-top{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom: 5px; }
   .cat-name{ font-size: 13.5px; font-weight: 500; display:flex; align-items:center; gap:7px; }
   .cat-dot{ width:8px; height:8px; border-radius:50%; display:inline-block; }
-  .cat-amounts{ font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .cat-amounts{ font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); }
   .bar-track{ height: 8px; background: var(--surface-2); border-radius: 6px; overflow:hidden; border: 1px solid var(--border); }
   .bar-fill{ height: 100%; border-radius: 6px; transition: width .3s ease; }
-  .bar-fill.over{ background: var(--coral) !important; background-image: repeating-linear-gradient(135deg, rgba(0,0,0,0.15) 0 6px, transparent 6px 12px); }
-  .over-tag{ font-family: var(--font-mono); font-size: 10px; color: var(--coral); margin-left:6px; letter-spacing:0.04em; }
 
   .filter-chips{ display:flex; flex-wrap: wrap; gap: 6px; }
-  .chip{
-    font-family: var(--font-mono); font-size: 11px; padding: 5px 10px; border-radius: 20px;
-    border: 1px solid var(--border-strong); color: var(--text-dim); cursor:pointer; background: transparent;
-  }
+  .chip{ font-family: var(--font-mono); font-size: 11px; padding: 5px 10px; border-radius: 20px; border: 1px solid var(--border-strong); color: var(--text-dim); cursor:pointer; background: transparent; }
   .chip.active{ background: var(--brass); color:#1A1400; border-color: var(--brass); font-weight:600; }
 
   .add-form{
     display:grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto auto; gap: 8px; margin-bottom: 16px;
     padding: 12px; background: var(--surface-2); border-radius: 10px; border: 1px dashed var(--border-strong);
   }
-  .add-form input, .add-form select{
-    background: var(--bg-2); border: 1px solid var(--border-strong); color: var(--text);
-    border-radius: 7px; padding: 8px 9px; font-size: 12.5px; font-family: var(--font-body); width: 100%;
-  }
-  .add-form input[type=number]{ font-family: var(--font-mono); }
-  .add-form button{
-    background: var(--brass); color: #1A1400; border:none; border-radius: 7px; padding: 8px 14px;
-    font-weight: 700; font-size: 12.5px; cursor:pointer; white-space: nowrap;
-  }
-  .add-form button:hover{ background: var(--brass-light); }
+  .add-form input, .add-form select{ background: var(--bg-2); border: 1px solid var(--border-strong); color: var(--text); border-radius: 7px; padding: 8px 9px; font-size: 12.5px; width: 100%; }
+  .add-form button{ background: var(--brass); color: #1A1400; border:none; border-radius: 7px; padding: 8px 14px; font-weight: 700; cursor:pointer; }
   .add-form .type-toggle{ display:flex; border:1px solid var(--border-strong); border-radius:7px; overflow:hidden; }
-  .add-form .type-toggle button{
-    flex:1; background: var(--bg-2); color: var(--text-dim); border:none; padding: 8px 6px; font-size:11.5px;
-    font-family: var(--font-mono); cursor:pointer; font-weight:500;
-  }
+  .add-form .type-toggle button{ flex:1; background: var(--bg-2); color: var(--text-dim); border:none; padding: 8px 6px; font-size:11.5px; cursor:pointer; }
   .add-form .type-toggle button.active.expense{ background: var(--coral); color:#1a0806; }
   .add-form .type-toggle button.active.income{ background: var(--sage); color:#08150f; }
 
   .table-wrap{ max-height: 420px; overflow-y: auto; }
   .ledger-table{ width:100%; border-collapse: collapse; font-size: 13px; }
-  .ledger-table thead th{
-    text-align:left; font-family: var(--font-mono); font-size: 10.5px; letter-spacing:0.08em; text-transform:uppercase;
-    color: var(--text-faint); padding: 6px 8px; position: sticky; top:0; background: var(--surface); border-bottom: 1px solid var(--border-strong);
-  }
+  .ledger-table thead th{ text-align:left; font-family: var(--font-mono); font-size: 10.5px; color: var(--text-faint); padding: 6px 8px; position: sticky; top:0; background: var(--surface); border-bottom: 1px solid var(--border-strong); }
   .ledger-table tbody tr{ border-bottom: 1px dotted var(--border-strong); }
   .ledger-table td{ padding: 9px 8px; vertical-align: middle; }
-  .ledger-table td.date{ font-family: var(--font-mono); font-size: 12px; color: var(--text-dim); white-space:nowrap; }
-  .ledger-table td.amount{ font-family: var(--font-mono); font-weight:600; text-align:right; white-space:nowrap; }
+  .ledger-table td.amount{ font-family: var(--font-mono); font-weight:600; text-align:right; }
   .amount.expense{ color: var(--coral); }
   .amount.income{ color: var(--sage); }
-  .cat-pill, .pay-pill{
-    display:inline-block; font-size: 10.5px; padding: 2px 7px; border-radius: 20px; font-weight:500;
-    background: var(--surface-2); border: 1px solid var(--border-strong); font-family: var(--font-mono);
-  }
+  .cat-pill, .pay-pill{ display:inline-block; font-size: 10.5px; padding: 2px 7px; border-radius: 20px; font-weight:500; background: var(--surface-2); border: 1px solid var(--border-strong); font-family: var(--font-mono); }
   .pay-pill{ color: var(--brass-light); border-color: rgba(201,162,39,0.3); }
-  .del-btn{ background:none; border:none; color: var(--text-faint); cursor:pointer; font-size: 14px; padding: 2px 6px; }
+  .del-btn{ background:none; border:none; color: var(--text-faint); cursor:pointer; font-size: 14px; }
   .del-btn:hover{ color: var(--coral); }
-  .empty-row td{ text-align:center; color: var(--text-faint); padding: 30px 10px; font-size: 13px; }
 
   .chart-box{ position:relative; height: 220px; }
-
-  .budget-setup .panel-head button{
-    background: var(--surface-2); border:1px solid var(--border-strong); color: var(--text);
-    padding:6px 12px; border-radius:7px; font-family: var(--font-mono); font-size:11.5px; cursor:pointer;
-  }
+  .budget-setup .panel-head button{ background: var(--surface-2); border:1px solid var(--border-strong); color: var(--text); padding:6px 12px; border-radius:7px; font-family: var(--font-mono); font-size:11.5px; cursor:pointer; }
   #budgetSetupBody{ display:flex; flex-direction:column; gap:10px; }
   .field-row{ display:flex; justify-content:space-between; align-items:center; gap:10px; }
-  .field-row label{ font-size: 13px; color: var(--text-dim); }
-  .field-row input{
-    width: 110px; background: var(--bg-2); border:1px solid var(--border-strong); color: var(--text);
-    font-family: var(--font-mono); padding: 6px 8px; border-radius:7px; text-align:right;
-  }
-  .field-row.overall{ padding-bottom:10px; border-bottom: 1px solid var(--border); margin-bottom:4px; }
-  .save-budget-btn{
-    margin-top: 6px; background: var(--brass); color:#1A1400; border:none; border-radius:8px; padding:9px;
-    font-weight:700; font-size:12.5px; cursor:pointer;
-  }
+  .field-row input{ width: 110px; background: var(--bg-2); border:1px solid var(--border-strong); color: var(--text); font-family: var(--font-mono); padding: 6px 8px; border-radius:7px; text-align:right; }
+  .save-budget-btn{ margin-top: 6px; background: var(--brass); color:#1A1400; border:none; border-radius:8px; padding:9px; font-weight:700; cursor:pointer; }
 
   .data-panel .hint{ font-size: 12px; color: var(--text-faint); line-height:1.5; margin: 0 0 12px; }
   .data-panel-btns{ display:flex; gap:8px; flex-wrap:wrap; }
-  .ghost-btn{
-    flex:1; min-width: 120px; background: var(--surface-2); border:1px solid var(--border-strong); color: var(--text-dim);
-    padding: 9px; border-radius: 8px; font-family: var(--font-mono); font-size: 11.5px; cursor:pointer;
-  }
+  .ghost-btn{ flex:1; min-width: 120px; background: var(--surface-2); border:1px solid var(--border-strong); color: var(--text-dim); padding: 9px; border-radius: 8px; font-family: var(--font-mono); font-size: 11.5px; cursor:pointer; }
   .ghost-btn:hover{ border-color: var(--brass); color: var(--text); }
   .ghost-btn.danger:hover{ border-color: var(--coral); color: var(--coral); }
-
-  @media (max-width: 880px){
-    .grid-main{ grid-template-columns: 1fr; }
-    .kpi-grid{ grid-template-columns: 1fr 1fr; }
-    .add-form{ grid-template-columns: 1fr 1fr; }
-  }
 </style>
 </head>
 <body>
-<div class="app">
 
+<!-- AUTHENTICATION MODAL -->
+<div class="auth-overlay" id="authModal">
+  <div class="auth-card">
+    <div class="auth-toggle">
+      <button id="tabLogin" class="active">Sign In</button>
+      <button id="tabSignup">Sign Up</button>
+    </div>
+
+    <!-- 1. LOGIN FORM -->
+    <form id="loginForm">
+      <h2>Welcome Back</h2>
+      <p>Enter your credentials to access your dashboard.</p>
+      <div class="auth-field">
+        <label>Username</label>
+        <input type="text" id="loginUser" placeholder="Enter username" required autocomplete="username">
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="loginPass" placeholder="Enter password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="auth-btn" id="loginSubmitBtn">Sign In</button>
+      <div class="auth-error" id="loginError" hidden></div>
+    </form>
+
+    <!-- 2. SIGNUP FORM -->
+    <form id="signupForm" hidden>
+      <h2>Create Account</h2>
+      <p>Register with your personal Google Sheet ID.</p>
+      <div class="auth-field">
+        <label>Username</label>
+        <input type="text" id="signupUser" placeholder="Choose a username" required>
+      </div>
+      <div class="auth-field">
+        <label>Password</label>
+        <input type="password" id="signupPass" placeholder="Choose a password" required>
+      </div>
+      <div class="auth-field">
+        <label>Your Google Sheet ID</label>
+        <input type="text" id="signupSheetId" placeholder="Paste Google Sheet ID" required>
+      </div>
+      <button type="submit" class="auth-btn" id="signupSubmitBtn">Sign Up & Connect Sheet</button>
+      <div class="auth-error" id="signupError" hidden></div>
+    </form>
+  </div>
+</div>
+
+<div class="app">
   <header class="topbar">
     <div class="brand">
       <span class="eyebrow">Personal Finance</span>
@@ -274,7 +282,8 @@
       <div style="display:flex; gap:10px; align-items:center;">
         <div class="sync-controls">
           <div class="sync-badge" id="syncBadge"><span class="dot-status"></span><span id="syncText">Connected</span></div>
-          <button class="manual-sync-btn" id="manualSyncBtn" title="Sync now with Google Sheets">🔄 Sync Now</button>
+          <button class="manual-sync-btn" id="manualSyncBtn">🔄 Sync Now</button>
+          <button class="logout-btn" id="logoutBtn">Logout</button>
         </div>
         <div class="range-tabs" id="rangeTabs">
           <button data-range="thisMonth" class="active">This Month</button>
@@ -383,11 +392,9 @@
 
       <section class="panel data-panel">
         <div class="panel-head"><h2>Google Sheets Sync</h2></div>
-        <p class="hint" id="sheetHint">Connected directly to your Google Sheets Apps Script endpoint.</p>
+        <p class="hint" id="sheetHint">Connected directly to user spreadsheet.</p>
         <div class="data-panel-btns">
           <button class="ghost-btn" id="exportCsvBtn">📥 Download CSV</button>
-          <button class="ghost-btn" id="connectSheetBtn">Change URL</button>
-          <button class="ghost-btn" id="demoDataBtn">🧪 Load Demo Data</button>
           <button class="ghost-btn danger" id="clearAll">Clear Data</button>
         </div>
       </section>
@@ -399,7 +406,7 @@
 (function(){
   "use strict";
 
-  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzspzUk6RfjfnO_ZYHm9GYwHh7wQyttk0j0_FaT4vDwjRvbj-Df18o-tYxADxl93pnJ2A/exec";
+  const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyXxQDcGXvSyKH4QvlhJOs9KvdJXzuxRLK7YCYLJFlu9F6tmcUiF0XoVv5H6F8QaHxBgA/exec";
   
   const EXPENSE_CATEGORIES = ["Groceries","Dining","Utilities","Transport","Entertainment","Shopping","Health","Other"];
   const INCOME_CATEGORIES = ["Salary","Freelance","Investment","Gift","Other Income"];
@@ -413,10 +420,9 @@
     Entertainment:"#C9A227", Shopping:"#B26FA9", Health:"#5B8DBA", Other:"#8C97A0"
   };
 
-  // Custom initial category budgets (Overall budget is dynamically calculated)
   const DEFAULT_BUDGETS = {
-    overall: 50000,
-    categories: { Groceries:12000, Dining:6000, Utilities:5000, Transport:4000, Entertainment:3000, Shopping:8000, Health:5000, Other:7000 }
+    overall: 0,
+    categories: { Groceries:0, Dining:0, Utilities:0, Transport:0, Entertainment:0, Shopping:0, Health:0, Other:0 }
   };
 
   let transactions = [];
@@ -425,9 +431,8 @@
   let customStart = null, customEnd = null;
   let categoryFilter = "all";
   let categoryChart = null, dailyChart = null;
-  
-  let sheetUrl = DEFAULT_SCRIPT_URL;
-  localStorage.removeItem('google_sheet_url');
+  let currentUser = null;
+  let userSpreadsheetId = null;
 
   const $ = (id) => document.getElementById(id);
   const fmt = (n) => (n < 0 ? "-₹" : "₹") + Math.abs(n).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -440,31 +445,119 @@
   };
   const uid = () => Math.random().toString(36).slice(2,10);
 
-  // Calculate dynamic overall budget from category caps
   function calculateTotalBudget() {
     return Object.values(budgets.categories).reduce((sum, val) => sum + (parseFloat(val) || 0), 0);
   }
 
+  // ---------- User Authentication ----------
+  async function handleLogin(username, password) {
+    const errorDiv = $("loginError");
+    errorDiv.hidden = true;
+    $("loginSubmitBtn").textContent = "Verifying...";
+
+    try {
+      const res = await fetch(DEFAULT_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ action: "login", username, password }).toString()
+      });
+      
+      const result = await res.json();
+      if (result.success) {
+        currentUser = result.username;
+        userSpreadsheetId = result.spreadsheetId;
+        localStorage.setItem("user_session", JSON.stringify({ username: currentUser, spreadsheetId: userSpreadsheetId }));
+        
+        $("authModal").style.display = "none";
+        loadData().then(render);
+      } else {
+        errorDiv.textContent = result.message || "Invalid username or password";
+        errorDiv.hidden = false;
+      }
+    } catch (err) {
+      errorDiv.textContent = "Auth connection error. Please try again.";
+      errorDiv.hidden = false;
+    } finally {
+      $("loginSubmitBtn").textContent = "Sign In";
+    }
+  }
+
+  async function handleSignup(username, password, spreadsheetId) {
+    const errorDiv = $("signupError");
+    errorDiv.hidden = true;
+    $("signupSubmitBtn").textContent = "Creating Account...";
+
+    try {
+      const res = await fetch(DEFAULT_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ action: "signup", username, password, spreadsheetId }).toString()
+      });
+      
+      const result = await res.json();
+      if (result.success) {
+        currentUser = result.username;
+        userSpreadsheetId = result.spreadsheetId;
+        localStorage.setItem("user_session", JSON.stringify({ username: currentUser, spreadsheetId: userSpreadsheetId }));
+        
+        $("authModal").style.display = "none";
+        loadData().then(render);
+      } else {
+        errorDiv.textContent = result.message || "Signup failed";
+        errorDiv.hidden = false;
+      }
+    } catch (err) {
+      errorDiv.textContent = "Signup connection error. Please try again.";
+      errorDiv.hidden = false;
+    } finally {
+      $("signupSubmitBtn").textContent = "Sign Up & Connect Sheet";
+    }
+  }
+
+  function checkSession() {
+    const stored = localStorage.getItem("user_session");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      currentUser = parsed.username;
+      userSpreadsheetId = parsed.spreadsheetId;
+      $("authModal").style.display = "none";
+      loadData().then(render);
+    } else {
+      $("authModal").style.display = "flex";
+    }
+  }
+
   // ---------- Sync & Storage ----------
   async function loadData(){
-    const savedTx = localStorage.getItem('finance_tx');
-    const savedBudgets = localStorage.getItem('finance_budgets');
-    
+    const savedTx = localStorage.getItem(`finance_tx_${currentUser}`);
+    const savedBudgets = localStorage.getItem(`finance_budgets_${currentUser}`);
+
     if(savedTx) transactions = JSON.parse(savedTx);
-    if(savedBudgets) budgets = JSON.parse(savedBudgets);
+
+    const defaultBudgets = JSON.parse(JSON.stringify(DEFAULT_BUDGETS));
+    if(savedBudgets){
+      try {
+        const parsedBudgets = JSON.parse(savedBudgets);
+        const legacyTotal = parsedBudgets && parsedBudgets.overall === 50000;
+        const legacyCategoryTotal = parsedBudgets && parsedBudgets.categories && Object.values(parsedBudgets.categories).reduce((sum, value) => sum + (parseFloat(value) || 0), 0) === 50000;
+
+        budgets = legacyTotal || legacyCategoryTotal ? JSON.parse(JSON.stringify(defaultBudgets)) : parsedBudgets;
+      } catch (err) {
+        budgets = JSON.parse(JSON.stringify(defaultBudgets));
+      }
+    } else {
+      budgets = JSON.parse(JSON.stringify(defaultBudgets));
+    }
 
     budgets.overall = calculateTotalBudget();
-
-    if(sheetUrl) {
-      updateSyncStatus(true, "Connected");
-      fetchFromGoogleSheet();
-    }
+    updateSyncStatus(true, `User: ${currentUser}`);
+    fetchFromGoogleSheet();
   }
 
   function saveData(){
     budgets.overall = calculateTotalBudget();
-    localStorage.setItem('finance_tx', JSON.stringify(transactions));
-    localStorage.setItem('finance_budgets', JSON.stringify(budgets));
+    localStorage.setItem(`finance_tx_${currentUser}`, JSON.stringify(transactions));
+    localStorage.setItem(`finance_budgets_${currentUser}`, JSON.stringify(budgets));
   }
 
   function updateSyncStatus(connected, text){
@@ -474,17 +567,18 @@
       $("syncText").textContent = text || "Connected";
     } else {
       badge.classList.remove("connected");
-      $("syncText").textContent = "Local Mode";
+      $("syncText").textContent = "Offline";
     }
   }
 
   async function syncToGoogleSheet(txData) {
-    if (!sheetUrl) return;
+    if (!userSpreadsheetId) return;
     try {
       updateSyncStatus(true, "Syncing...");
       
       const params = new URLSearchParams();
       params.append("action", "add");
+      params.append("spreadsheetId", userSpreadsheetId);
       params.append("id", txData.id);
       params.append("date", txData.date);
       params.append("type", txData.type);
@@ -493,16 +587,14 @@
       params.append("amount", txData.amount.toString());
       params.append("note", txData.note || "");
 
-      await fetch(sheetUrl, {
+      await fetch(DEFAULT_SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
-        headers: { 
-          'Content-Type': 'application/x-www-form-urlencoded' 
-        },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: params.toString()
       });
 
-      updateSyncStatus(true, "Synced to Sheet");
+      updateSyncStatus(true, `User: ${currentUser}`);
     } catch (err) {
       console.error("Sheet sync failed", err);
       updateSyncStatus(false, "Sync Error");
@@ -512,34 +604,30 @@
   let isSyncing = false;
 
   async function deleteFromGoogleSheet(txData) {
-    if (!sheetUrl) return;
+    if (!userSpreadsheetId) return;
     
     isSyncing = true;
     try {
-      updateSyncStatus(true, "Deleting from Sheet...");
+      updateSyncStatus(true, "Deleting...");
       
       const params = new URLSearchParams();
       params.append("action", "delete");
+      params.append("spreadsheetId", userSpreadsheetId);
       params.append("id", String(txData.id || ""));
       params.append("date", String(txData.date || ""));
       params.append("category", String(txData.category || ""));
       params.append("amount", String(txData.amount || 0));
       params.append("note", String(txData.note || ""));
 
-      await fetch(sheetUrl, {
+      await fetch(DEFAULT_SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
-        headers: { 
-          'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' 
-        },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
         body: params.toString()
       });
 
-      updateSyncStatus(true, "Deleted from Sheet");
-      
-      setTimeout(() => {
-        isSyncing = false;
-      }, 1200);
+      updateSyncStatus(true, `User: ${currentUser}`);
+      setTimeout(() => { isSyncing = false; }, 1200);
 
     } catch (err) {
       console.error("Delete request error:", err);
@@ -549,17 +637,18 @@
   }
 
   async function fetchFromGoogleSheet(){
-    if (!sheetUrl || isSyncing) return;
+    if (!userSpreadsheetId || isSyncing) return;
     
     try {
-      const res = await fetch(sheetUrl);
+      const fetchUrl = `${DEFAULT_SCRIPT_URL}?spreadsheetId=${encodeURIComponent(userSpreadsheetId)}`;
+      const res = await fetch(fetchUrl);
       const data = await res.json();
       if (Array.isArray(data)){
         transactions = data.map(row => ({ id: row.id || uid(), ...row }));
         saveData();
         render();
       }
-      updateSyncStatus(true, "Connected");
+      updateSyncStatus(true, `User: ${currentUser}`);
     } catch(err) {
       console.error("Fetch failed", err);
     }
@@ -579,7 +668,7 @@
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.setAttribute("href", url);
-    link.setAttribute("download", `Ledger_Finance_Report_${new Date().toISOString().slice(0,10)}.csv`);
+    link.setAttribute("download", `Ledger_${currentUser}_${new Date().toISOString().slice(0,10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -755,57 +844,15 @@
   }
 
   function renderCharts(filtered){
-    // Diagnostic check 1: Chart.js CDN
-    if (typeof Chart === "undefined") {
-      console.error("❌ [REASON 3] Chart.js CDN not loaded. Browser tracking prevention or ad-blocker may be blocking cdnjs.cloudflare.com");
-      console.log("Possible solutions:");
-      console.log("  1. Whitelist cdnjs.cloudflare.com in your ad-blocker");
-      console.log("  2. Try a different browser without tracking prevention");
-      console.log("  3. Use a local copy of Chart.js instead of CDN");
-      
-      // Safely update chart containers
-      const chartsContainer = $("categoryChart");
-      if (chartsContainer && chartsContainer.parentElement) {
-        chartsContainer.parentElement.textContent = "⚠️ Charts blocked by tracking prevention\n\nWhitelist cdnjs.cloudflare.com";
-      }
-      const barContainer = $("dailyChart");
-      if (barContainer && barContainer.parentElement) {
-        barContainer.parentElement.textContent = "⚠️ Charts blocked by tracking prevention\n\nWhitelist cdnjs.cloudflare.com";
-      }
-      return;
-    }
+    if (typeof Chart === "undefined") return;
 
     try {
       const expenses = filtered.filter(t=>t.type==="expense");
-      
-      // Diagnostic check 2: Date range mismatch
-      console.log(`📊 [renderCharts] Filtered entries: ${filtered.length}, Expenses: ${expenses.length}`);
-      console.log(`📅 Date range: ${getRangeBounds().label}`);
-      console.log(`🗂️ All transactions in storage: ${transactions.length}`);
-      
-      if (expenses.length === 0) {
-        console.warn("❌ [REASON 1] No expenses found in this date range.");
-        console.log("Hint: Add an expense to see charts, or switch to 'Year to Date' tab");
-        
-        // Safely update chart containers
-        const chartsContainer = $("categoryChart");
-        if (chartsContainer && chartsContainer.parentElement) {
-          chartsContainer.parentElement.textContent = "📊 No expenses yet. Add one to see the breakdown!";
-        }
-        const barContainer = $("dailyChart");
-        if (barContainer && barContainer.parentElement) {
-          barContainer.parentElement.textContent = "📈 No expenses yet. Add one to see daily trends!";
-        }
-        return;
-      }
-
       const byCat = {};
       expenses.forEach(t => { byCat[t.category] = (byCat[t.category]||0) + t.amount; });
       const catLabels = Object.keys(byCat).filter(k => byCat[k] > 0);
       const catData = catLabels.map(k => byCat[k]);
       const catColors = catLabels.map(k => CAT_COLORS_HEX[k] || "#8C97A0");
-
-      console.log("✅ Chart data ready:", { catLabels, catData });
 
       $("donutSub").textContent = expenses.length ? (getRangeBounds().label) : "no data";
       const donutCtx = $("categoryChart").getContext("2d");
@@ -851,7 +898,7 @@
         }
       });
     } catch (err) {
-      console.error("❌ Chart render error:", err);
+      console.error("Chart render error:", err);
     }
   }
 
@@ -867,7 +914,6 @@
     html += `<button class="save-budget-btn" id="saveBudgets">Save budget</button>`;
     body.innerHTML = html;
 
-    // Recalculate total budget dynamically as category caps are modified
     body.querySelectorAll(".editCat").forEach(inp => {
       inp.addEventListener("input", () => {
         let sum = 0;
@@ -905,10 +951,46 @@
     $("txDate").value = isoDate(new Date());
     populateCategorySelect("expense");
 
+    // Modal Toggle Handlers
+    $("tabLogin").addEventListener("click", () => {
+      $("tabLogin").classList.add("active");
+      $("tabSignup").classList.remove("active");
+      $("loginForm").hidden = false;
+      $("signupForm").hidden = true;
+    });
+
+    $("tabSignup").addEventListener("click", () => {
+      $("tabSignup").classList.add("active");
+      $("tabLogin").classList.remove("active");
+      $("signupForm").hidden = false;
+      $("loginForm").hidden = true;
+    });
+
+    // Login Form Submit
+    $("loginForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      handleLogin($("loginUser").value, $("loginPass").value);
+    });
+
+    // Signup Form Submit
+    $("signupForm").addEventListener("submit", (e) => {
+      e.preventDefault();
+      handleSignup($("signupUser").value, $("signupPass").value, $("signupSheetId").value);
+    });
+
+    // Logout
+    $("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("user_session");
+      currentUser = null;
+      userSpreadsheetId = null;
+      $("authModal").style.display = "flex";
+    });
+
     $("manualSyncBtn").addEventListener("click", () => {
       fetchFromGoogleSheet();
     });
 
+    // Range selection
     $("rangeTabs").querySelectorAll("button").forEach(btn => {
       btn.addEventListener("click", () => {
         $("rangeTabs").querySelectorAll("button").forEach(b=>b.classList.remove("active"));
@@ -963,70 +1045,16 @@
       else { body.hidden = true; $("toggleBudgetSetup").textContent = "Edit"; }
     });
 
-    $("connectSheetBtn").addEventListener("click", () => {
-      const url = prompt("Enter your Google Apps Script Web App URL:", sheetUrl);
-      if(url !== null){
-        sheetUrl = url.trim();
-        if(sheetUrl) {
-          updateSyncStatus(true, "Connected");
-          fetchFromGoogleSheet();
-        } else {
-          updateSyncStatus(false, "Disconnected");
-        }
-      }
-    });
-
     $("exportCsvBtn").addEventListener("click", exportToCSV);
 
-    $("demoDataBtn").addEventListener("click", () => {
-      const confirmAdd = confirm("Add 15 sample transactions to test the charts? This will not affect existing data.");
-      if (!confirmAdd) return;
-
-      const today = new Date();
-      const sampleExpenses = [
-        { date: isoDate(new Date(today.getTime() - 0*24*60*60*1000)), category: "Groceries", amount: 2500, method: "Card", note: "Weekly shopping" },
-        { date: isoDate(new Date(today.getTime() - 0*24*60*60*1000)), category: "Dining", amount: 800, method: "UPI", note: "Lunch with team" },
-        { date: isoDate(new Date(today.getTime() - 1*24*60*60*1000)), category: "Transport", amount: 150, method: "Cash", note: "Taxi fare" },
-        { date: isoDate(new Date(today.getTime() - 2*24*60*60*1000)), category: "Entertainment", amount: 500, method: "Card", note: "Movie tickets" },
-        { date: isoDate(new Date(today.getTime() - 2*24*60*60*1000)), category: "Groceries", amount: 1200, method: "UPI", note: "Vegetables" },
-        { date: isoDate(new Date(today.getTime() - 3*24*60*60*1000)), category: "Health", amount: 2000, method: "Card", note: "Doctor visit" },
-        { date: isoDate(new Date(today.getTime() - 4*24*60*60*1000)), category: "Utilities", amount: 3500, method: "UPI", note: "Electricity bill" },
-        { date: isoDate(new Date(today.getTime() - 5*24*60*60*1000)), category: "Shopping", amount: 4200, method: "Card", note: "Clothes" },
-        { date: isoDate(new Date(today.getTime() - 6*24*60*60*1000)), category: "Dining", amount: 1500, method: "UPI", note: "Dinner" },
-        { date: isoDate(new Date(today.getTime() - 7*24*60*60*1000)), category: "Groceries", amount: 3000, method: "Cash", note: "Monthly groceries" },
-        { date: isoDate(new Date(today.getTime() - 8*24*60*60*1000)), category: "Transport", amount: 200, method: "Card", note: "Auto rickshaw" },
-        { date: isoDate(new Date(today.getTime() - 9*24*60*60*1000)), category: "Entertainment", amount: 300, method: "UPI", note: "Streaming subscription" },
-        { date: isoDate(new Date(today.getTime() - 10*24*60*60*1000)), category: "Health", amount: 500, method: "Cash", note: "Medicine" },
-        { date: isoDate(new Date(today.getTime() - 11*24*60*60*1000)), category: "Shopping", amount: 1800, method: "Card", note: "Shoes" },
-        { date: isoDate(new Date(today.getTime() - 12*24*60*60*1000)), category: "Dining", amount: 600, method: "UPI", note: "Breakfast" }
-      ];
-
-      sampleExpenses.forEach(exp => {
-        transactions.push({
-          id: uid(),
-          date: exp.date,
-          type: "expense",
-          category: exp.category,
-          method: exp.method,
-          amount: exp.amount,
-          note: exp.note
-        });
-      });
-
-      saveData();
-      render();
-      console.log("✅ Added 15 sample expenses. Charts should now show data!");
-      alert("✅ 15 sample transactions added!\n\nCharts should now display data. Check 'This Month' or 'Year to Date' tabs.");
-    });
-
     $("clearAll").addEventListener("click", () => {
-      if(!confirm("Clear all transactions? This cannot be undone.")) return;
+      if(!confirm("Clear all local transactions? This cannot be undone.")) return;
       transactions = [];
       saveData();
       render();
     });
 
-    loadData().then(render);
+    checkSession();
   }
 
   init();
